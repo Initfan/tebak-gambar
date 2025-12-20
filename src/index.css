@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@layer utilities {
+    button {
+        @apply cursor-pointer;
+    }
+}
+
+@config "../tailwind.config.ts"

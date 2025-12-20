@@ -1,0 +1,98 @@
+{
+  "mudah": [
+    {
+      "id": 1,
+      "image": "/images/easy1.jpeg",
+      "suggested": "dunia",
+      "answer": "jendela dunia"
+    },
+    {
+      "id": 2,
+      "image": "/images/easy2.jpeg",
+      "suggested": "goyang",
+      "answer": "kursi goyang"
+    },
+    {
+      "id": 3,
+      "image": "/images/easy3.jpeg",
+      "suggested": "kutu",
+      "answer": "kutu buku"
+    },
+    {
+      "id": 4,
+      "image": "/images/easy4.jpeg",
+      "suggested": "papan",
+      "answer": "papan jalan"
+    },
+    {
+      "id": 5,
+      "image": "/images/easy5.jpeg",
+      "suggested": "hari",
+      "answer": "matahari"
+    }
+  ],
+  "sedang": [
+    {
+      "id": 1,
+      "image": "/images/medium1.jpeg",
+      "suggested": "terjun",
+      "answer": "terjun payung"
+    },
+    {
+      "id": 2,
+      "image": "/images/medium2.jpeg",
+      "suggested": "taj",
+      "answer": "taj mahal"
+    },
+    {
+      "id": 3,
+      "image": "/images/medium3.jpeg",
+      "suggested": "tuang",
+      "answer": "tuang air"
+    },
+    {
+      "id": 4,
+      "image": "/images/medium4.jpeg",
+      "suggested": "merah",
+      "answer": "lampu merah"
+    },
+    {
+      "id": 5,
+      "image": "/images/medium5.jpeg",
+      "suggested": "san",
+      "answer": "pingsan"
+    }
+  ],
+  "sulit": [
+    {
+      "id": 1,
+      "image": "/images/hard1.jpeg",
+      "suggested": "listrik",
+      "answer": "tenaga listrik"
+    },
+    {
+      "id": 2,
+      "image": "/images/hard2.jpeg",
+      "suggested": "tidur",
+      "answer": "ruang tidur"
+    },
+    {
+      "id": 3,
+      "image": "/images/hard3.jpeg",
+      "suggested": "asap",
+      "answer": "asap roko"
+    },
+    {
+      "id": 4,
+      "image": "/images/hard4.jpeg",
+      "suggested": "pasangan",
+      "answer": "pasangan serasi"
+    },
+    {
+      "id": 2,
+      "image": "/images/hard5.jpeg",
+      "suggested": "acara",
+      "answer": "acara keluarga"
+    }
+  ]
+}
