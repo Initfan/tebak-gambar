@@ -1,11 +1,11 @@
 import React from "react";
 import { Link, useParams } from "react-router";
-import type { Leaderboard } from "./Leaderboard";
+import { useLeaderboard } from "../hooks/useLeaderboard";
 
 interface ResultProps {
   totalQuestions: number;
   correct: number;
-  time: string;
+  time: number;
   starCount?: number;
   onReplay?: () => void;
   onHome?: () => void;
@@ -21,13 +21,28 @@ const Result: React.FC<ResultProps> = ({
 }) => {
   const { level } = useParams();
   const name = localStorage.getItem("name");
-  const leaderboard = JSON.parse(
-    localStorage.getItem("leaderboard")!
-  ) as Leaderboard[];
 
-  const rank = leaderboard
-    .filter((v) => v.level == level)
-    .findIndex((v) => v.name == name);
+  if (!name || !level) return;
+
+  const leaderboard = useLeaderboard(level);
+  const rank =
+    leaderboard.data
+      .filter((v) => v.level == level)
+      .findIndex((v) => v.name == name) + 1;
+
+  const formatTime = (seconds: number) => {
+    if (seconds < 60) {
+      return `${seconds}s`;
+    }
+
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+
+    const mm = mins.toString().padStart(2, "0");
+    const ss = secs.toString().padStart(2, "0");
+
+    return `${mm}:${ss}`;
+  };
 
   return (
     <div className="bg-background-dark text-white min-h-screen flex flex-col antialiased selection:bg-primary selection:text-white pb-3">
@@ -112,9 +127,7 @@ const Result: React.FC<ResultProps> = ({
             <p className="text-[#92b7c9] text-xs font-medium uppercase tracking-wider">
               Peringkat
             </p>
-            <p className="text-white text-xl font-bold leading-tight">
-              {rank + 1}
-            </p>
+            <p className="text-white text-xl font-bold leading-tight">{rank}</p>
           </div>
 
           {/* Time */}
@@ -130,7 +143,9 @@ const Result: React.FC<ResultProps> = ({
             <p className="text-[#92b7c9] text-xs font-medium uppercase tracking-wider">
               Waktu
             </p>
-            <p className="text-white text-xl font-bold leading-tight">{time}</p>
+            <p className="text-white text-xl font-bold leading-tight">
+              {formatTime(time)}
+            </p>
           </div>
         </section>
 

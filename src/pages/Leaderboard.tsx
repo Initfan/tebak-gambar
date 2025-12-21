@@ -1,19 +1,20 @@
-import React from "react";
 import { Link, useParams } from "react-router";
+import { useLeaderboard } from "../hooks/useLeaderboard";
 
 export type Leaderboard = {
+  id: string;
   name: string;
   time: string;
   level: string;
 };
 
-const Leaderboard: React.FC = () => {
+const Leaderboard = () => {
   const { level } = useParams();
-  const leaderboard = JSON.parse(
-    localStorage.getItem("leaderboard")!
-  ) as Leaderboard[];
+  if (!level) return;
 
-  const rank = leaderboard
+  const leaderboard = useLeaderboard(level);
+
+  const rank = leaderboard.data
     .filter((v) => v.level == level)
     .sort((a, b) => Number(a.time) - Number(b.time));
 
@@ -138,7 +139,10 @@ const Leaderboard: React.FC = () => {
               {rank.map(
                 (v, i) =>
                   i > 2 && (
-                    <div className="flex items-center gap-4 bg-white dark:bg-card-dark px-4 py-3 rounded-xl border border-gray-100 dark:border-divider shadow-sm">
+                    <div
+                      key={i}
+                      className="flex items-center gap-4 bg-white dark:bg-card-dark px-4 py-3 rounded-xl border border-gray-100 dark:border-divider shadow-sm"
+                    >
                       <div className="text-slate-400 font-bold text-lg w-6 text-center">
                         4
                       </div>

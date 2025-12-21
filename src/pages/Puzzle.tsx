@@ -1,8 +1,8 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { motion } from "motion/react";
 import ResultPage from "./Result";
-import type { Leaderboard } from "./Leaderboard";
+import { submitScore } from "../hooks/useSubmitScore";
 
 type Puzzle = {
   id: number;
@@ -19,231 +19,215 @@ type CategoryPerformance = {
 interface Result {
   totalQuestions: number;
   correct: number;
-  time: string;
+  time: number;
   starCount?: number;
   categoryPerformance?: CategoryPerformance[];
 }
 
 const Puzzle = () => {
   const navigate = useNavigate();
+  const inputRef = useRef<HTMLInputElement>(null);
   const { level } = useParams();
+
   const [timer, setTimer] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
+  const [progress, setProgress] = useState(0);
   const [puzzles, setPuzzles] = useState<Puzzle[]>([]);
+  const [tries, setTries] = useState(0);
+  const [answer, setAnswer] = useState("");
+  const [status, setStatus] = useState<"salah" | "dikit-lagi" | "benar" | null>(
+    null
+  );
+
   const [result, setResult] = useState<Result>({
-    totalQuestions: puzzles.length,
-    correct: puzzles.length,
+    totalQuestions: 0,
+    correct: 0,
+    time: 0,
     starCount: 5,
-    time: timer.toString(),
   });
-  const [trying, setTrying] = useState(0);
-  const [answer, setAnswer] = useState<string>("");
-  const [answerStatus, setAnswerStatus] = useState<
-    "salah" | "dikit-lagi" | "benar" | null
-  >(null);
 
   useEffect(() => {
     fetch("/puzzle.json")
       .then((res) => res.json())
       .then((res) => setPuzzles(res[level ?? 0]));
-  }, []);
+  }, [level]);
 
   useEffect(() => {
-    if (answerStatus != null) return;
-    const clear = setInterval(() => {
-      setTimer((p) => p + 1);
-    }, 1000);
-    return () => clearInterval(clear);
-  }, [answerStatus]);
+    if (status) return;
+    const tick = setInterval(() => setTimer((t) => t + 1), 1000);
+    return () => clearInterval(tick);
+  }, [status]);
 
-  const leaderboardUser = () => {
-    const name = localStorage.getItem("name");
-    const currentLeaderboard = JSON.parse(
-      localStorage.getItem("leaderboard")!
-    ) as Leaderboard[] | null;
-    const leaderboard = { name, time: timer.toString(), level };
+  const resetStatusWithDelay = () => setTimeout(() => setStatus(null), 1500);
 
-    if (!name) return;
+  const validateAnswer = () => {
+    const correctAnswer = puzzles[progress].answer.toLowerCase();
+    const userAnswer = answer.toLowerCase();
 
-    if (currentLeaderboard) {
-      const userScore = currentLeaderboard.find(
-        (v) => v.name == name && v.level == level
-      );
+    if (userAnswer === correctAnswer) return "benar";
 
-      if (userScore) {
-        const updateUserScore = currentLeaderboard
-          .filter((v) => v.name == name && v.level != level)
-          .concat(currentLeaderboard.filter((v) => v.name != name));
+    const isClose = correctAnswer.split(" ").includes(userAnswer);
+    if (isClose) return "dikit-lagi";
 
-        localStorage.setItem(
-          "leaderboard",
-          JSON.stringify([...updateUserScore!, { ...leaderboard }])
-        );
-      } else
-        localStorage.setItem(
-          "leaderboard",
-          JSON.stringify([...currentLeaderboard!, { ...leaderboard }])
-        );
-    } else
-      localStorage.setItem("leaderboard", JSON.stringify([{ ...leaderboard }]));
+    return "salah";
   };
 
-  const clearStatus = () =>
-    setTimeout(() => {
-      setAnswerStatus(null);
-    }, 1500);
+  const formatTime = (seconds: number) => {
+    if (seconds < 60) {
+      return `${seconds}s`;
+    }
+
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+
+    const mm = mins.toString().padStart(2, "0");
+    const ss = secs.toString().padStart(2, "0");
+
+    return `${mm}:${ss}`;
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setTrying((p) => p + 1);
+    setTries((t) => t + 1);
 
-    const correct = answer.toLowerCase() == puzzles[currentLevel].answer;
-    const closeAnswer =
-      puzzles[currentLevel].answer
-        .split(" ")
-        .filter((v) => v == answer.toLowerCase()).length > 0;
+    const validation = validateAnswer();
+    setStatus(validation);
+    resetStatusWithDelay();
 
-    if (correct && currentLevel + 1 == puzzles.length) {
-      leaderboardUser();
-    }
+    const isLast = progress + 1 === puzzles.length;
+    const currentPuzzle = puzzles[progress];
 
-    if (correct) {
-      setAnswerStatus("benar");
-      clearStatus();
-      setAnswer("");
-      setTrying(0);
-      setCurrentLevel((p) => p + 1);
-      setResult((p) => ({
-        ...p,
+    if (validation === "benar") {
+      if (isLast) {
+        const name = localStorage.getItem("name");
+        if (name && level) submitScore(name, level, timer);
+      }
+
+      setResult({
+        totalQuestions: puzzles.length,
         correct: puzzles.length,
         starCount: 5,
-        totalQuestions: puzzles.length,
-        time: timer.toString(),
+        time: timer,
         categoryPerformance: [
           {
-            name: puzzles[currentLevel].answer,
-            percentage: trying,
+            name: currentPuzzle.answer,
+            percentage: tries,
           },
         ],
-      }));
-    } else if (closeAnswer) {
-      setAnswerStatus("dikit-lagi");
-      clearStatus();
-    } else {
-      setAnswerStatus("salah");
-      clearStatus();
+      });
+
+      setTries(0);
+      setProgress((p) => p + 1);
     }
+
+    inputRef.current?.focus();
+    setAnswer("");
   };
 
   const replayGame = () => {
-    setCurrentLevel(0);
+    setProgress(0);
     setTimer(0);
+    setTries(0);
+    setStatus(null);
+    setAnswer("");
   };
 
-  return currentLevel == puzzles.length ? (
-    <ResultPage
-      {...result}
-      onReplay={replayGame}
-      onHome={() => navigate("/")}
-    />
-  ) : (
+  if (progress === puzzles.length) {
+    return (
+      <ResultPage
+        {...result}
+        onReplay={replayGame}
+        onHome={() => navigate("/")}
+      />
+    );
+  }
+
+  const puzzle = puzzles[progress];
+
+  return (
     <div className="dark font-display bg-background-dark text-slate-900 dark:text-white transition-colors duration-200">
       <div className="relative flex min-h-screen max-w-md mx-auto flex-col overflow-hidden shadow-2xl">
-        {/* Header */}
-        <header className="sticky top-0 z-10 flex items-center justify-between bg-background-dark/95 backdrop-blur-sm p-4">
+        {/* HEADER */}
+        <header className="sticky dark:text-white top-0 z-10 flex items-center justify-between bg-background-dark/95 backdrop-blur-sm p-4">
           <Link
             to={".."}
-            className="flex size-10 items-center justify-center rounded-full hover:bg-slate-200 dark:text-white dark:hover:bg-surface-dark transition-colors"
+            className="flex size-10 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-surface-dark transition-colors"
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </Link>
 
-          <div className="flex flex-col items-center">
-            <h2 className="text-lg font-bold dark:text-white">Level {level}</h2>
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-              {currentLevel + 1}/{puzzles.length}
+          <div className="flex flex-col items-center ">
+            <h2 className="text-lg font-bold">Level {level}</h2>
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              {progress + 1}/{puzzles.length}
             </span>
           </div>
 
-          <div className="flex items-center">
-            <div className="flex items-center gap-1 dark:text-white">
-              <span className="material-symbols-outlined">timer</span>
-              <span>{timer}s</span>
-            </div>
+          <div className="flex items-center gap-1">
+            <span className="material-symbols-outlined">timer</span>
+            <span>{formatTime(timer)}</span>
+
             <button
-              onClick={() => setAnswer(puzzles[currentLevel].suggested)}
-              className="flex size-10 items-center justify-center rounded-full text-primary hover:bg-slate-200 dark:hover:bg-surface-dark transition-colors"
+              onClick={() => setAnswer(puzzle?.suggested.toUpperCase() ?? "")}
+              className="flex size-10 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-surface-dark text-primary transition-colors"
             >
               <span className="material-symbols-outlined">lightbulb</span>
             </button>
           </div>
         </header>
 
-        {/* Main */}
-        {puzzles.length > 0 && (
-          <>
-            {answerStatus && (
+        {/* MAIN */}
+        {puzzle && (
+          <div className="flex-1 flex flex-col px-4 pb-4">
+            {/* STATUS FEEDBACK */}
+            {status && (
               <motion.div
-                animate={{
-                  y: 150,
-                  opacity: 1,
-                }}
+                animate={{ y: 150, opacity: 1 }}
                 transition={{ type: "spring", bounce: 0.5 }}
-                className="absolute z-10 inset-x-0 flex justify-center"
+                className="absolute inset-x-0 flex justify-center z-10"
               >
-                <img src={`/icon/${answerStatus}.png`} alt="" width={200} />
+                <img src={`/icon/${status}.png`} alt="" width={200} />
               </motion.div>
             )}
+
+            {/* IMAGE */}
+            <section className="py-4">
+              <div
+                className="aspect-square w-full rounded-xl bg-cover bg-center shadow-lg border dark:border-surface-dark relative overflow-hidden"
+                style={{ backgroundImage: `url(${puzzle.image})` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20" />
+              </div>
+            </section>
+
+            {/* INPUT */}
             <form
               onSubmit={handleSubmit}
-              className="flex-1 flex flex-col px-4 pb-4"
+              className="mt-auto flex flex-col gap-4"
             >
-              {/* Puzzle Image */}
-              <section className="py-4">
-                <div
-                  className="aspect-square w-full rounded-xl bg-cover bg-center shadow-lg border border-slate-200 dark:border-surface-dark relative overflow-hidden"
-                  style={{
-                    backgroundImage: `url(${puzzles[currentLevel].image})`,
-                  }}
-                >
-                  <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
-                </div>
-              </section>
+              <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+                Apa jawaban dari gambar di atas?
+              </p>
 
-              {/* Input Area */}
-              <section className="mt-auto flex flex-col gap-4">
-                <p className="text-center text-sm font-medium text-slate-500 dark:text-slate-400">
-                  Apa jawaban dari gambar di atas?
-                </p>
+              <input
+                value={answer}
+                ref={inputRef}
+                onChange={(e) => setAnswer(e.target.value.toUpperCase())}
+                placeholder="KETIK JAWABAN..."
+                className="form-input dark:text-white h-14 w-full rounded-xl border dark:border-slate-700 text-lg font-bold tracking-widest text-center px-4"
+              />
 
-                <label className="relative">
-                  <input
-                    value={answer}
-                    onChange={(e) => setAnswer(e.target.value.toUpperCase())}
-                    placeholder="KETIK JAWABAN..."
-                    disabled={answerStatus != null}
-                    className="form-input h-14 w-full rounded-xl border dark:text-white border-slate-300 dark:border-slate-700
-                  bg-white dark:bg-surface-dark px-4 text-center text-lg font-bold tracking-widest
-                  placeholder:text-slate-400 dark:placeholder:text-slate-500
-                  focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-                  />
-                </label>
-
-                <button
-                  type="submit"
-                  disabled={answerStatus != null}
-                  className="flex h-14 w-full items-center justify-center gap-2 rounded-xl
-                bg-primary text-white font-bold shadow-lg shadow-primary/25
-                hover:bg-primary-dark active:scale-[0.98] transition-all"
-                >
-                  Kirim Jawaban
-                  <span className="material-symbols-outlined text-[20px]">
-                    send
-                  </span>
-                </button>
-              </section>
+              <button
+                type="submit"
+                disabled={!!status}
+                className="h-14 w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-white font-bold shadow-lg hover:bg-primary-dark transition-all"
+              >
+                Kirim Jawaban
+                <span className="material-symbols-outlined text-[20px]">
+                  send
+                </span>
+              </button>
             </form>
-          </>
+          </div>
         )}
       </div>
     </div>
