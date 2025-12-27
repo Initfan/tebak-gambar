@@ -3,25 +3,25 @@ import LevelCard from "../components/LevelCard";
 
 const Level: React.FC = () => {
   return (
-    <div className="dark bg-background-dark min-h-screen text-slate-900 dark:text-white font-display antialiased">
+    <div className="bg-[url('background.png')] bg-center bg-cover bg-fixed min-h-svh pb-4 font-display antialiased">
       <div className="relative flex max-w-md mx-auto flex-col shadow-2xl">
         {/* Header */}
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 dark:border-[#233c48] p-4 bg-background-light/95 dark:bg-[#111c22]/95">
+        <header className="flex items-center justify-between p-4">
           <Link
             to={".."}
-            className="flex size-10 items-center justify-center rounded-full hover:bg-slate-200 dark:text-white dark:hover:bg-surface-dark transition-colors"
+            className="flex size-10 items-center justify-center rounded-full hover:bg-surface-dark transition-colors"
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </Link>
 
-          <h2 className="flex-1 text-center dark:text-white pr-10 text-lg font-bold">
+          <h2 className="flex-1 text-center pr-10 text-lg font-bold">
             Pilih Level
           </h2>
         </header>
 
         {/* Main */}
-        <main className="flex-1 space-y-4 p-4 overflow-y-auto">
-          <p className="text-center text-sm text-slate-500 dark:text-[#92b7c9]">
+        <main className="flex-1 space-y-6 px-4 overflow-y-auto">
+          <p className="text-center text-sm text-slate-800">
             Tantang diri Anda dengan berbagai tingkat kesulitan.
           </p>
 

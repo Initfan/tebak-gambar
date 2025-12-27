@@ -144,92 +144,96 @@ const Puzzle = () => {
   const puzzle = puzzles[progress];
 
   return (
-    <div className="dark font-display bg-background-dark text-slate-900 dark:text-white transition-colors duration-200">
-      <div className="relative flex min-h-screen max-w-md mx-auto flex-col overflow-hidden shadow-2xl">
-        {/* HEADER */}
-        <header className="sticky dark:text-white top-0 z-10 flex items-center justify-between bg-background-dark/95 backdrop-blur-sm p-4">
-          <Link
-            to={".."}
-            className="flex size-10 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-surface-dark transition-colors"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-          </Link>
+    <div className="relative flex min-h-dvh max-w-md mx-auto flex-col overflow-hidden shadow-2xl">
+      {/* HEADER */}
+      <header className="sticky dark:text-white top-0 z-10 flex items-center justify-between p-4">
+        <Link
+          to={".."}
+          className="flex size-10 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-surface-dark transition-colors"
+        >
+          <span className="material-symbols-outlined">arrow_back</span>
+        </Link>
 
-          <div className="flex flex-col items-center ">
-            <h2 className="text-lg font-bold">Level {level}</h2>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+        {/* <div className="flex flex-col items-center "> */}
+        <h2 className="text-lg font-bold">Level {level}</h2>
+
+        {/* </div> */}
+
+        <div className="flex items-center gap-1">
+          <span className="material-symbols-outlined">timer</span>
+          <span>{formatTime(timer)}</span>
+
+          <button
+            onClick={() => setAnswer(puzzle?.suggested.toUpperCase() ?? "")}
+            className="flex size-10 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-surface-dark text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined">lightbulb</span>
+          </button>
+        </div>
+      </header>
+
+      {/* MAIN */}
+      {puzzle && (
+        <div className="flex-1 flex flex-col px-4 pb-4">
+          {/* STATUS FEEDBACK */}
+          {status && (
+            <motion.div
+              animate={{ y: 150, opacity: 1 }}
+              transition={{ type: "spring", bounce: 0.5 }}
+              className="absolute inset-x-0 flex justify-center z-10"
+            >
+              <img src={`/icon/${status}.png`} alt="" width={200} />
+            </motion.div>
+          )}
+
+          {/* IMAGE */}
+          <section className="py-4 relative">
+            <span className="text-xs font-bold text-slate-800 absolute top-8 left-4 z-10">
               {progress + 1}/{puzzles.length}
             </span>
-          </div>
+            <div
+              className="aspect-square w-full rounded-xl bg-cover bg-center shadow-lg border-slate-400 relative overflow-hidden"
+              style={{ backgroundImage: `url(${puzzle.image})` }}
+            >
+              <div className="absolute inset-0 bg-linear-to-t from-black/20" />
+            </div>
+          </section>
 
-          <div className="flex items-center gap-1">
-            <span className="material-symbols-outlined">timer</span>
-            <span>{formatTime(timer)}</span>
+          {/* INPUT */}
+          <form onSubmit={handleSubmit} className="mt-auto flex flex-col gap-4">
+            <p className="text-center text-sm text-slate-700">
+              Apa jawaban dari gambar di atas?
+            </p>
+
+            <input
+              value={answer}
+              ref={inputRef}
+              onFocus={() => {
+                setTimeout(() => {
+                  inputRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                  });
+                }, 300);
+              }}
+              onChange={(e) => setAnswer(e.target.value.toUpperCase())}
+              placeholder="KETIK JAWABAN..."
+              className="outline-none h-14 w-full rounded-xl bg-white shadow-xl text-lg font-bold tracking-widest text-center px-4"
+            />
 
             <button
-              onClick={() => setAnswer(puzzle?.suggested.toUpperCase() ?? "")}
-              className="flex size-10 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-surface-dark text-primary transition-colors"
+              type="submit"
+              disabled={!!status}
+              className="h-14 w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-white font-bold shadow-lg hover:bg-primary-dark transition-all"
             >
-              <span className="material-symbols-outlined">lightbulb</span>
+              Kirim Jawaban
+              <span className="material-symbols-outlined text-[20px]">
+                send
+              </span>
             </button>
-          </div>
-        </header>
-
-        {/* MAIN */}
-        {puzzle && (
-          <div className="flex-1 flex flex-col px-4 pb-4">
-            {/* STATUS FEEDBACK */}
-            {status && (
-              <motion.div
-                animate={{ y: 150, opacity: 1 }}
-                transition={{ type: "spring", bounce: 0.5 }}
-                className="absolute inset-x-0 flex justify-center z-10"
-              >
-                <img src={`/icon/${status}.png`} alt="" width={200} />
-              </motion.div>
-            )}
-
-            {/* IMAGE */}
-            <section className="py-4">
-              <div
-                className="aspect-square w-full rounded-xl bg-cover bg-center shadow-lg border dark:border-surface-dark relative overflow-hidden"
-                style={{ backgroundImage: `url(${puzzle.image})` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20" />
-              </div>
-            </section>
-
-            {/* INPUT */}
-            <form
-              onSubmit={handleSubmit}
-              className="mt-auto flex flex-col gap-4"
-            >
-              <p className="text-center text-sm text-slate-500 dark:text-slate-400">
-                Apa jawaban dari gambar di atas?
-              </p>
-
-              <input
-                value={answer}
-                ref={inputRef}
-                onChange={(e) => setAnswer(e.target.value.toUpperCase())}
-                placeholder="KETIK JAWABAN..."
-                className="form-input dark:text-white h-14 w-full rounded-xl border dark:border-slate-700 text-lg font-bold tracking-widest text-center px-4"
-              />
-
-              <button
-                type="submit"
-                disabled={!!status}
-                className="h-14 w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-white font-bold shadow-lg hover:bg-primary-dark transition-all"
-              >
-                Kirim Jawaban
-                <span className="material-symbols-outlined text-[20px]">
-                  send
-                </span>
-              </button>
-            </form>
-          </div>
-        )}
-      </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 };

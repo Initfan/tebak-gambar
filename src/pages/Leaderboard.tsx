@@ -10,6 +10,7 @@ export type Leaderboard = {
 
 const Leaderboard = () => {
   const { level } = useParams();
+  const name = localStorage.getItem("name");
   if (!level) return;
 
   const leaderboard = useLeaderboard(level);
@@ -19,10 +20,10 @@ const Leaderboard = () => {
     .sort((a, b) => Number(a.time) - Number(b.time));
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-white min-h-screen">
-      <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden mx-auto max-w-md shadow-2xl bg-background-light dark:bg-background-dark">
+    <div className="min-h-screen flex justify-between pb-6 flex-col">
+      <main className="relative flex w-full flex-col justify-between overflow-x-hidden mx-auto max-w-md">
         {/* Top App Bar */}
-        <div className="sticky top-0 z-50 flex items-center bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md p-4 pb-2 justify-between border-b border-gray-200 dark:border-divider">
+        <div className="flex items-center py-4 pb-6 justify-between ">
           <Link
             to={"/level"}
             className="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
@@ -47,8 +48,7 @@ const Leaderboard = () => {
                     <div
                       className="w-full h-full rounded-full bg-cover bg-center"
                       style={{
-                        backgroundImage:
-                          "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAtVyzLjmN8X141JujIN7M1C3YD_i9Z0qw2xaEzfHEkvok0ilXwmdgw8gl7zK7X4Y3Q0ZbMnCU7QM5BaAoNd5wZxuGv2n1vXJQJCqaSE8k_xNrL2r8mEYLNk6Lqq4FnN80iaJqqqD4-Jje5t05sS3y_vAyGc2hkUpEj1fhtABtFiBoetj_1fCif2YXt2kI_iSpRLKETfDi0Dbd9kHUutvUulO6nZD8rSgkP8uuUZeSSgcIG1Bd5iqBkxTPijf1zTuwUnbAw3Sjgtzw')",
+                        backgroundImage: "url('/person.png')",
                       }}
                     />
                   </div>
@@ -76,8 +76,7 @@ const Leaderboard = () => {
                     <div
                       className="w-full h-full rounded-full bg-cover bg-center"
                       style={{
-                        backgroundImage:
-                          "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAyfdCtJy_QUBdApcCeXNNZ-e6yRaIdKC9HcgV4tO5yR95PWvWpCCeD3sTSe4U8XHeYvE8HPvoLUZAf1_eDaMKokeiXkdSqIqIoBezHXXm8dgY4I9NR-issZX0q6FP-h0k5nMYX-ol_e893HmxVK_oq-ALKHH-TjMrldn3p1zSP6T9lAW0rOpZHITFZKRSYsn_Wma9QFO84NZw6MpjJpUGxFogUEmHCha7YZmXPvLGwlM3C2zNtBCb31ULB4amaUOLTo1dRlzsX5Ls')",
+                        backgroundImage: "url('/person.png')",
                       }}
                     />
                   </div>
@@ -102,8 +101,7 @@ const Leaderboard = () => {
                     <div
                       className="w-full h-full rounded-full bg-cover bg-center"
                       style={{
-                        backgroundImage:
-                          "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCZdpAJMGyziGTztyAOmyJLLkwItvA4ulhzt5pzK2TpNZljA6AGoVkNJQ7wZmWMouZN0QT-Z9UnCmcOLM11Z7fO6O6ZyAMhKeUqtSkhwS3ra6ID8Trc0EjjNvLt3Jx03mULOhBBHH1G_dIcpr5ohCWN8xzsmmdEMybId0_vXYv-aXuMnAWfUVIlOrNxfSCqrdBgcIPcR7YHBmIXocvp4-SW5YzAmONqN5QOEy77mu-g5Cnz8JaKjw5HoZQc1YmBdJr5JaNJcwNEFWg')",
+                        backgroundImage: "url('/person.png')",
                       }}
                     />
                   </div>
@@ -126,37 +124,40 @@ const Leaderboard = () => {
         {rank.length >= 4 && (
           <>
             {/* Section Header */}
-            <div className="sticky top-16.25 z-40 bg-background-light dark:bg-background-dark pt-2 pb-2">
-              <h3 className="text-slate-900 dark:text-white text-base font-bold leading-tight px-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-xl">
-                  leaderboard
-                </span>
-                Peringkat Lainnya
-              </h3>
-            </div>
-            <div className="flex flex-col gap-1 pb-32 px-4">
+            <h3 className="mb-2 text-slate-900 dark:text-white text-base font-bold leading-tight px-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-xl">
+                leaderboard
+              </span>
+              Peringkat Lainnya
+            </h3>
+
+            <div className="flex flex-col gap-1 px-4 mb-4">
               {/* User card */}
               {rank.map(
                 (v, i) =>
-                  i > 2 && (
+                  i > 2 &&
+                  i <= 10 && (
                     <div
                       key={i}
-                      className="flex items-center gap-4 bg-white dark:bg-card-dark px-4 py-3 rounded-xl border border-gray-100 dark:border-divider shadow-sm"
+                      className="flex items-center gap-4 bg-white/75 px-4 py-3 rounded-xl shadow"
                     >
-                      <div className="text-slate-400 font-bold text-lg w-6 text-center">
-                        4
+                      <div className="text-slate-500 font-bold text-lg w-6 text-center">
+                        {i + 1}
                       </div>
 
                       <div className="flex items-center gap-3 flex-1 overflow-hidden">
                         <div
-                          className="h-12 w-12 rounded-full bg-cover bg-center border"
+                          className="h-12 w-12 rounded-full bg-cover bg-center border border-slate-500"
                           style={{
-                            backgroundImage:
-                              "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAjFSKDIvz5jtOpVKt1jtwUivdka7vd47lr-IMDx0Hfespe338Yt8hEV4MgEMDM28tOdTzzbfo7CfBVXdwuzKqcfLDbT7zWrKNu7ToV_0s8gQJFXDhdtHLDBweA5R68Rye3G-66xC4rjQMva55p7ZtzXnA4Jl93IL-WQkkmCzj9oahG5MxiuT0uDUhtpq0HgrSGSSLYBgSCM5okr_CFkEwk6ade-M21KAlc6ynevQlIAdkRKX559qzH7XQ0sJTVWB7bWzRKiTXha_U')",
+                            backgroundImage: "url('/person.png')",
                           }}
                         />
                         <div className="min-w-0">
-                          <p className="font-medium truncate">{v.name}</p>
+                          <p
+                            className={`font-medium truncate ${v.name == name ? "text-blue-500" : ""}`}
+                          >
+                            {v.name}
+                          </p>
                         </div>
                       </div>
 
@@ -167,17 +168,17 @@ const Leaderboard = () => {
             </div>
           </>
         )}
-
-        {/* Floating Footer */}
-        <div className="fixed inset-x-0 bottom-0 left-0 w-full max-w-md mx-auto bg-linear-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark dark:to-transparent pt-12 pb-8 px-4 flex justify-center z-50">
-          <Link
-            to={"/"}
-            className="flex items-center justify-center gap-2 w-full bg-primary text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-primary/30 active:scale-[0.98]"
-          >
-            <span className="material-symbols-outlined">home</span>
-            Kembali ke Beranda
-          </Link>
-        </div>
+      </main>
+      <div className="px-4">
+        <Link
+          to={"/"}
+          className="flex items-center justify-center w-full h-12 rounded-full bg-slate-800 text-white font-medium text-base active:scale-[0.98] transition-all"
+        >
+          <span className="material-symbols-outlined mr-2 text-[20px]">
+            home
+          </span>
+          Kembali ke Beranda
+        </Link>
       </div>
     </div>
   );
